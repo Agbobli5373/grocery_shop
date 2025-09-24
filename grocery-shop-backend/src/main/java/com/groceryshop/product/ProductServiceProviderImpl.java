@@ -31,4 +31,34 @@ public class ProductServiceProviderImpl implements ProductServiceProvider {
         product.setStockQuantity(newStockQuantity);
         productRepository.save(product);
     }
+
+    @Override
+    public java.util.List<Product> findAllProducts(int page, int size) {
+        return productRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size)).getContent();
+    }
+
+    @Override
+    public long countProducts() {
+        return productRepository.count();
+    }
+
+    @Override
+    public long countProductsByStatusAndStockGreaterThan(com.groceryshop.product.ProductStatus status, int minStock) {
+        return productRepository.countByStatusAndStockQuantityGreaterThan(status, minStock);
+    }
+
+    @Override
+    public long countProductsByStockLessThan(int stockThreshold) {
+        return productRepository.countByStockQuantityLessThan(stockThreshold);
+    }
+
+    @Override
+    public long countProductsByStockQuantity(int stockQuantity) {
+        return productRepository.countByStockQuantity(stockQuantity);
+    }
+
+    @Override
+    public java.util.List<Product> findProductsByStockLessThan(int stockThreshold) {
+        return productRepository.findByStockQuantityLessThan(stockThreshold);
+    }
 }

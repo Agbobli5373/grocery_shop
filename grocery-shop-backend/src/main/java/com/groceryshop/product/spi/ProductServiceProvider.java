@@ -2,6 +2,7 @@ package com.groceryshop.product.spi;
 
 import com.groceryshop.product.Product;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,7 +20,56 @@ public interface ProductServiceProvider {
     Optional<Product> findProductById(Long productId);
 
     /**
-     * Updates the stock quantity for a product.
+     * Gets all products with pagination.
+     *
+     * @param page the page number (0-based)
+     * @param size the page size
+     * @return list of products
+     */
+    List<Product> findAllProducts(int page, int size);
+
+    /**
+     * Counts total products.
+     *
+     * @return total number of products
+     */
+    long countProducts();
+
+    /**
+     * Counts products by status and stock quantity.
+     *
+     * @param status the product status
+     * @param minStock the minimum stock quantity
+     * @return count of products matching criteria
+     */
+    long countProductsByStatusAndStockGreaterThan(com.groceryshop.product.ProductStatus status, int minStock);
+
+    /**
+     * Counts products with stock less than threshold.
+     *
+     * @param stockThreshold the stock threshold
+     * @return count of products below threshold
+     */
+    long countProductsByStockLessThan(int stockThreshold);
+
+    /**
+     * Counts products with exact stock quantity.
+     *
+     * @param stockQuantity the stock quantity
+     * @return count of products with exact stock
+     */
+    long countProductsByStockQuantity(int stockQuantity);
+
+    /**
+     * Finds products with stock less than threshold.
+     *
+     * @param stockThreshold the stock threshold
+     * @return list of products below threshold
+     */
+    List<Product> findProductsByStockLessThan(int stockThreshold);
+
+    /**
+     * Updates product stock quantity.
      *
      * @param productId the product ID
      * @param newStockQuantity the new stock quantity

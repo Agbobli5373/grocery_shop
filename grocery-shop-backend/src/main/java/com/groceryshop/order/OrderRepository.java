@@ -27,4 +27,26 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     java.math.BigDecimal sumTotalAmountByStatusAndDateRange(@Param("status") OrderStatus status,
                                                             @Param("startDate") LocalDateTime startDate,
                                                             @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status = :status")
+    java.util.Optional<java.math.BigDecimal> sumTotalAmountByStatus(@Param("status") OrderStatus status);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate")
+    long countByOrderDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status = :status AND o.orderDate BETWEEN :startDate AND :endDate")
+    long countByStatusAndOrderDateBetween(@Param("status") OrderStatus status,
+                                         @Param("startDate") LocalDateTime startDate,
+                                         @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT DISTINCT o.customer FROM Order o WHERE o.orderDate > :since")
+    java.util.List<com.groceryshop.auth.User> findDistinctCustomersWithOrdersAfter(@Param("since") LocalDateTime since);
+
+    @Query("SELECT o.customer, COUNT(o), SUM(o.totalAmount) FROM Order o GROUP BY o.customer ORDER BY SUM(o.totalAmount) DESC")
+    java.util.List<java.lang.Object[]> findTopCustomersByOrderCount(@Param("limit") int limit);
+
+    @Query("SELECT o FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate AND o.status = :status")
+    java.util.List<Order> findByOrderDateBetweenAndStatus(@Param("startDate") LocalDateTime startDate,
+                                                          @Param("endDate") LocalDateTime endDate,
+                                                          @Param("status") OrderStatus status);
 }

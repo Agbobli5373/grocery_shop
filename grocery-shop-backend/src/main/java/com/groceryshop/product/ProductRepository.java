@@ -29,4 +29,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findTop10ByStatusOrderByCreatedAtDesc(@Param("status") ProductStatus status);
 
     boolean existsByName(String name);
+
+    long countByStockQuantityLessThan(int stockQuantity);
+
+    long countByStockQuantity(int stockQuantity);
+
+    List<Product> findByStockQuantityLessThan(int stockQuantity);
+
+    long countByStatusAndStockQuantityGreaterThan(ProductStatus status, int stockQuantity);
 }
