@@ -57,7 +57,9 @@ public class OrderItem {
     }
 
     private void recalculateTotal() {
-        this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        if (unitPrice != null && quantity != null) {
+            this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        }
     }
 
     // Getters and Setters

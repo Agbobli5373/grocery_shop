@@ -125,12 +125,9 @@ public class TestDataFactory {
     }
 
     public static OrderItem createTestOrderItem(Long id, Order order, Product product) {
-        OrderItem item = new OrderItem();
+        OrderItem item = new OrderItem(product, 2, product.getPrice());
         item.setId(id);
         item.setOrder(order);
-        item.setProduct(product);
-        item.setQuantity(2);
-        item.setUnitPrice(product.getPrice());
         return item;
     }
 

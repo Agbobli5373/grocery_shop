@@ -79,8 +79,8 @@ public class OrderServiceImpl implements OrderService {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(savedOrder);
             orderItem.setProduct(cartItem.getProduct());
-            orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setUnitPrice(cartItem.getUnitPrice());
+            orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setTotalPrice(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
 
             orderItemRepository.save(orderItem);
