@@ -1,10 +1,21 @@
 package com.groceryshop.order;
 
+import com.groceryshop.auth.User;
+import com.groceryshop.auth.spi.AuthServiceProvider;
+import com.groceryshop.cart.Cart;
+import com.groceryshop.cart.CartItem;
+import com.groceryshop.cart.spi.CartServiceProvider;
+import com.groceryshop.product.Product;
+import com.groceryshop.product.StockUpdatedEvent;
+import com.groceryshop.product.spi.ProductServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -16,9 +27,25 @@ public class OrderServiceImpl implements OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final AuthServiceProvider authServiceProvider;
+    private final CartServiceProvider cartServiceProvider;
+    private final ProductServiceProvider productServiceProvider;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(
+            OrderRepository orderRepository,
+            OrderItemRepository orderItemRepository,
+            AuthServiceProvider authServiceProvider,
+            CartServiceProvider cartServiceProvider,
+            ProductServiceProvider productServiceProvider,
+            ApplicationEventPublisher eventPublisher) {
         this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.authServiceProvider = authServiceProvider;
+        this.cartServiceProvider = cartServiceProvider;
+        this.productServiceProvider = productServiceProvider;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -26,15 +53,65 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(Long customerId, String deliveryAddress) {
         log.info("Creating order for customer ID: {} with delivery address: {}", customerId, deliveryAddress);
 
-        // This is a basic implementation - in a real application, this would
-        // involve getting the customer's cart, calculating totals, etc.
+        User customer = authServiceProvider.findUserById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
+
+        Cart cart = cartServiceProvider.findCartByUserId(customerId)
+                .orElseThrow(() -> new RuntimeException("Cart not found for customer: " + customerId));
+
+        List<CartItem> cartItems = cartServiceProvider.findCartItemsByCartId(cart.getId());
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Cannot create order from empty cart");
+        }
+
+        // Create order
         Order order = new Order();
+        order.setCustomer(customer);
         order.setStatus(OrderStatus.PENDING);
         order.setDeliveryAddress(deliveryAddress);
+        order.setTotalAmount(cart.getTotalAmount());
+        order.setOrderDate(LocalDateTime.now());
 
         Order savedOrder = orderRepository.save(order);
-        log.info("Order created with ID: {}", savedOrder.getId());
 
+        // Convert cart items to order items and update stock
+        for (CartItem cartItem : cartItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(savedOrder);
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setUnitPrice(cartItem.getUnitPrice());
+            orderItem.setTotalPrice(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+
+            orderItemRepository.save(orderItem);
+            savedOrder.getItems().add(orderItem);
+
+            // Update product stock
+            Product product = cartItem.getProduct();
+            int newStockQuantity = product.getStockQuantity() - cartItem.getQuantity();
+            productServiceProvider.updateProductStock(product.getId(), newStockQuantity);
+
+            // Publish stock update event
+            eventPublisher.publishEvent(new StockUpdatedEvent(
+                this,
+                product.getId(),
+                product.getName(),
+                cartItem.getQuantity(),
+                newStockQuantity
+            ));
+        }
+
+        // Publish order created event
+        eventPublisher.publishEvent(new OrderCreatedEvent(
+            savedOrder.getId(),
+            customerId,
+            savedOrder.getTotalAmount(),
+            deliveryAddress,
+            savedOrder.getOrderDate(),
+            customer.getEmail()
+        ));
+
+        log.info("Order created with ID: {} for customer {}", savedOrder.getId(), customerId);
         return savedOrder;
     }
 
@@ -46,9 +123,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> getOrdersByCustomerId(Long customerId) {
-        // This would need to be implemented based on your Order entity relationship
-        // For now, returning empty list
-        return List.of();
+        return orderRepository.findByCustomerIdOrderByOrderDateDesc(customerId);
     }
 
     @Override
