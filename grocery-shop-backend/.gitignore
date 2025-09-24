@@ -18,7 +18,7 @@
 *.zip
 *.tar.gz
 *.rar
-.idea/
+.ideal
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -69,9 +69,6 @@ out/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-frontend-plan.md
-plan.md
 
 # VS Code
 .vscode/
@@ -515,5 +512,3 @@ Session.vim
 auto-save-list
 tramp
 .\#*
-
-
