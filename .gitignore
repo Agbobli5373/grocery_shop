@@ -70,8 +70,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-frontend-plan.md
-plan.md
+# frontend-plan.md
+# plan.md
 
 # VS Code
 .vscode/
@@ -516,4 +516,4 @@ auto-save-list
 tramp
 .\#*
 
-grocery-shop-frontend
+

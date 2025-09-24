@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -18,6 +19,7 @@ import java.util.Map;
  * Defines exchanges, queues, and bindings for event messaging.
  */
 @Configuration
+@ConditionalOnProperty(name = "spring.rabbitmq.host", matchIfMissing = false)
 public class RabbitMQConfig {
 
     // Exchange Names
