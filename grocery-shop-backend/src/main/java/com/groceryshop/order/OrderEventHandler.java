@@ -59,6 +59,7 @@ public class OrderEventHandler {
             case SHIPPED -> log.info("Order {} has been shipped", event.orderId());
             case DELIVERED -> log.info("Order {} has been delivered", event.orderId());
             case CANCELLED -> log.info("Order {} has been cancelled", event.orderId());
+            default -> throw new IllegalArgumentException("Unexpected value: " + event.newStatus());
         }
     }
 
