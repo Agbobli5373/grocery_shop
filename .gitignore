@@ -1,0 +1,514 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+.ideal
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle
+**/build/
+!src/**/build/
+
+# Checkstyle
+checkstyle
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# H2 Database files
+*.db
+*.trace.db
+*.lock.db
+*.mv.db
+
+# Application logs
+logs/
+*.log
+log/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Environment specific files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Security sensitive files
+application-secret.yml
+application-secret.properties
+secrets/
+*.key
+*.p12
+*.jks
+*.pem
+*.crt
+
+# Test coverage reports
+coverage/
+*.exec
+jacoco/
+
+# Docker
+.dockerignore
+
+# Node.js (if any frontend assets are included)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database migration backups
+src/main/resources/db/backup/
+
+# Local configuration overrides
+application-local.yml
+application-local.properties
+
+# Actuator heap dumps
+*.hprof
+
+# Spring Boot DevTools
+.spring-boot-devtools.properties
+
+# Flyway
+src/main/resources/db/migration/*.sql.bak
+
+# RabbitMQ data (if running locally)
+rabbitmq/
+
+# PostgreSQL data (if running locally)
+postgres/
+
+# Docker volumes
+docker-volumes/
+
+# Kubernetes
+*.yaml.bak
+k8s/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfvars
+
+# AWS
+.aws/
+
+# Google Cloud
+.gcloud/
+
+# Azure
+.azure/
+
+# CI/CD
+.github/workflows/*.yml.bak
+.gitlab-ci.yml.bak
+
+# Documentation builds
+docs/build/
+*.pdf
+*.docx
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Editor backups
+*~
+
+# Vim
+*.swp
+*.swo
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# SublimeText
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# TextMate
+*.tmproj
+*.tmproject
+tmtags
+
+# Xcode
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+
+# AppCode
+.idea/
+
+# RubyMine
+.idea/
+
+# WebStorm
+.idea/
+
+# PhpStorm
+.idea/
+
+# CLion
+.idea/
+
+# PyCharm
+.idea/
+
+# GoLand
+.idea/
+
+# Rider
+.idea/
+
+# DataSpell
+.idea/
+
+# Fleet
+.idea/
+
+# Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# Visual Studio
+.vs/
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.log
+*.svclog
+*.scc
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# NetBeans
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# SBT
+.cache
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE
+.scala_dependencies
+.worksheet
+
+# Microsoft Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Linux
+*~
+
+# Application specific
+# H2 Database files
+*.db
+*.trace.db
+*.lock.db
+*.mv.db
+
+# Logs
+logs/
+*.log
+log/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Security files
+application-secret.yml
+application-secret.properties
+secrets/
+*.key
+*.p12
+*.jks
+*.pem
+*.crt
+
+# Test coverage
+coverage/
+*.exec
+jacoco/
+
+# Docker
+.dockerignore
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database backups
+src/main/resources/db/backup/
+
+# Local configs
+application-local.yml
+application-local.properties
+
+# Heap dumps
+*.hprof
+
+# DevTools
+.spring-boot-devtools.properties
+
+# Flyway backups
+src/main/resources/db/migration/*.sql.bak
+
+# Local infrastructure
+rabbitmq/
+postgres/
+docker-volumes/
+
+# Cloud configs
+.aws/
+.gcloud/
+.azure/
+
+# CI/CD backups
+.github/workflows/*.yml.bak
+.gitlab-ci.yml.bak
+
+# Documentation
+docs/build/
+*.pdf
+*.docx
+
+# Backups
+*.bak
+*.backup
+*.old
+
+# Editor files
+*~
+Session.vim
+.netrwhist
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
