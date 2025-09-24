@@ -8,6 +8,8 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 /**
  * RabbitMQ configuration for the Grocery Shop event-driven architecture.
  * Defines exchanges, queues, and bindings for event messaging.
@@ -23,9 +25,12 @@ public class RabbitMQConfig {
 
     // Queue Names
     public static final String ORDER_PROCESSING_QUEUE = "order.processing";
+    public static final String ORDER_EVENTS_QUEUE = "order-events";
     public static final String INVENTORY_UPDATES_QUEUE = "inventory.updates";
+    public static final String INVENTORY_EVENTS_QUEUE = "inventory-events";
     public static final String NOTIFICATION_EMAIL_QUEUE = "notification.email";
     public static final String NOTIFICATION_PUSH_QUEUE = "notification.push";
+    public static final String NOTIFICATION_EVENTS_QUEUE = "notification-events";
     public static final String ANALYTICS_EVENTS_QUEUE = "analytics.events";
 
     // Routing Keys
@@ -91,8 +96,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue orderEventsQueue() {
+        return new Queue(ORDER_EVENTS_QUEUE, true);
+    }
+
+    @Bean
     public Queue inventoryUpdatesQueue() {
         return new Queue(INVENTORY_UPDATES_QUEUE, true);
+    }
+
+    @Bean
+    public Queue inventoryEventsQueue() {
+        return new Queue(INVENTORY_EVENTS_QUEUE, true);
     }
 
     @Bean
@@ -103,6 +118,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue notificationPushQueue() {
         return new Queue(NOTIFICATION_PUSH_QUEUE, true);
+    }
+
+    @Bean
+    public Queue notificationEventsQueue() {
+        return new Queue(NOTIFICATION_EVENTS_QUEUE, true);
     }
 
     @Bean
@@ -152,6 +172,37 @@ public class RabbitMQConfig {
     @Bean
     public Binding pushNotificationBinding() {
         return BindingBuilder.bind(notificationPushQueue())
+                .to(notificationExchange())
+                .where(PUSH_HEADER)
+                .matches(PUSH_VALUE);
+    }
+
+    // Bindings for SSE Event Queues
+    @Bean
+    public Binding orderEventsBinding() {
+        return BindingBuilder.bind(orderEventsQueue())
+                .to(orderExchange())
+                .with("*"); // Bind to all order events
+    }
+
+    @Bean
+    public Binding inventoryEventsBinding() {
+        return BindingBuilder.bind(inventoryEventsQueue())
+                .to(inventoryExchange())
+                .with("*"); // Bind to all inventory events
+    }
+
+    @Bean
+    public Binding notificationEventsEmailBinding() {
+        return BindingBuilder.bind(notificationEventsQueue())
+                .to(notificationExchange())
+                .where(EMAIL_HEADER)
+                .matches(EMAIL_VALUE);
+    }
+
+    @Bean
+    public Binding notificationEventsPushBinding() {
+        return BindingBuilder.bind(notificationEventsQueue())
                 .to(notificationExchange())
                 .where(PUSH_HEADER)
                 .matches(PUSH_VALUE);

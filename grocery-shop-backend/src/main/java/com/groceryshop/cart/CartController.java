@@ -52,7 +52,7 @@ public class CartController {
         Long userId = getUserIdFromAuthentication(authentication);
         Cart cart = cartService.addItemToCart(userId, request);
         CartResponse response = mapToCartResponse(cart);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.created(null).body(response);
     }
 
     @PutMapping("/items/{itemId}")

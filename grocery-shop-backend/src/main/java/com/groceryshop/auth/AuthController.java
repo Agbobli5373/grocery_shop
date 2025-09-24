@@ -40,7 +40,7 @@ public class AuthController {
             user.getLastName(),
             user.getRole()
         );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.created(null).body(response);
     }
 
     @PostMapping("/logout")
