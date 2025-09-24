@@ -51,7 +51,7 @@ public class InventoryServiceImpl implements InventoryService {
             this,
             productId,
             product.getName(),
-            quantity,
+            oldStock,
             newStock
         ));
 
