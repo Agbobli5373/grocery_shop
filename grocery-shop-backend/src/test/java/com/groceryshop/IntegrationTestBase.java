@@ -11,7 +11,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -41,8 +40,7 @@ public abstract class IntegrationTestBase {
 
     @Container
     static RabbitMQContainer rabbitMQ = new RabbitMQContainer("rabbitmq:3.12-management-alpine")
-            .withAdminPassword("admin")
-            .waitingFor(Wait.forLogMessage(".*Server startup complete.*", 1));
+            .withAdminPassword("admin");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -69,3 +67,4 @@ public abstract class IntegrationTestBase {
         return "http://localhost:" + port + path;
     }
 }
+   

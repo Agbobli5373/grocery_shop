@@ -1,12 +1,15 @@
 package com.groceryshop.config;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.support.RetryTemplate;
 
 import java.util.Map;
 
@@ -62,6 +65,16 @@ public class RabbitMQConfig {
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
+
+        // Configure retry template for better resilience during connection issues
+        RetryTemplate retryTemplate = new RetryTemplate();
+        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+        backOffPolicy.setInitialInterval(500); // Start with 500ms delay
+        backOffPolicy.setMultiplier(2.0); // Double the delay each retry
+        backOffPolicy.setMaxInterval(10000); // Max 10 seconds between retries
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+        rabbitTemplate.setRetryTemplate(retryTemplate);
+
         return rabbitTemplate;
     }
 
