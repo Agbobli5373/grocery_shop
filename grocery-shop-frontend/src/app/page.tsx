@@ -23,7 +23,7 @@ const categories: Category[] = [
     name: "Grains & Cereals",
     slug: "grains-cereals",
     image:
-      "https://images.unsplash.com/photo-1610348725531-843dff563e18?q=80&w=1280&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=1280&auto=format&fit=crop",
     itemCount: 80,
   },
   {
@@ -39,7 +39,7 @@ const categories: Category[] = [
     name: "Spices & Seasonings",
     slug: "spices-seasonings",
     image:
-      "https://images.unsplash.com/photo-1484901543075-778f64b1acc8?q=80&w=1280&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1280&auto=format&fit=crop",
     itemCount: 54,
   },
 ];
@@ -52,7 +52,7 @@ const featured: Product[] = [
     price: 35,
     originalPrice: 42,
     image:
-      "https://images.unsplash.com/photo-1587049352851-8d5d12f00f4a?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1597733336794-12d05021d510?q=80&w=1200&auto=format&fit=crop",
     category: "Fresh Produce",
     inStock: true,
     rating: 4.7,
@@ -65,7 +65,7 @@ const featured: Product[] = [
     description: "Sweet plantain for kelewele & ampesi",
     price: 18,
     image:
-      "https://images.unsplash.com/photo-1606689697833-8b33b0e9f8b3?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=1200&auto=format&fit=crop",
     category: "Fresh Produce",
     inStock: true,
     rating: 4.6,
@@ -108,7 +108,7 @@ const bestSellers: Product[] = [
     description: "Free-range eggs from local farms",
     price: 30,
     image:
-      "https://images.unsplash.com/photo-1517959105821-eaf2591984bc?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?q=80&w=1200&auto=format&fit=crop",
     category: "Protein",
     inStock: true,
     rating: 4.8,
@@ -121,7 +121,7 @@ const bestSellers: Product[] = [
     description: "Cleaned and ready to grill",
     price: 48,
     image:
-      "https://images.unsplash.com/photo-1604909052797-5c3a9a9e3d14?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1559847844-5315695dadae?q=80&w=1200&auto=format&fit=crop",
     category: "Protein",
     inStock: true,
     rating: 4.4,
@@ -134,7 +134,7 @@ const bestSellers: Product[] = [
     description: "Premium long-grain jasmine rice",
     price: 85,
     image:
-      "https://images.unsplash.com/photo-1563630423918-bbe10f9f3c1a?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=1600&auto=format&fit=crop",
     category: "Grains",
     inStock: true,
     rating: 4.3,
@@ -147,7 +147,7 @@ const bestSellers: Product[] = [
     description: "Spicy Ghanaian pepper sauce",
     price: 25,
     image:
-      "https://images.unsplash.com/photo-1599487488170-d11ec9c1721a?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=1200&auto=format&fit=crop",
     category: "Spices",
     inStock: true,
     rating: 4.6,
@@ -412,7 +412,7 @@ export default function HomePage() {
                 </div>
                 <div className="relative h-48">
                   <Image
-                    src="https://images.unsplash.com/photo-1556909075-f3e0204454b9?q=80&w=1600&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?q=80&w=1600&auto=format&fit=crop"
                     alt="Cleaning Supplies"
                     fill
                     className="object-cover"
@@ -452,7 +452,7 @@ export default function HomePage() {
                 </div>
                 <div className="relative h-48">
                   <Image
-                    src="https://images.unsplash.com/photo-1563630423918-bbe10f9f3c1a?q=80&w=1600&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=1600&auto=format&fit=crop"
                     alt="Rice and Water"
                     fill
                     className="object-cover"
@@ -578,7 +578,7 @@ export default function HomePage() {
                       <Image
                         src={
                           k === "okra"
-                            ? "https://images.unsplash.com/photo-1625944528562-3f1b062f0687?q=80&w=1200&auto=format&fit=crop"
+                            ? "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=1200&auto=format&fit=crop"
                             : k === "waakye"
                             ? "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop"
                             : "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?q=80&w=1200&auto=format&fit=crop"
