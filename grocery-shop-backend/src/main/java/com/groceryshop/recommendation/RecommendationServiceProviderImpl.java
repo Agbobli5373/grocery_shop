@@ -21,15 +21,12 @@ import java.util.stream.Collectors;
 public class RecommendationServiceProviderImpl implements RecommendationServiceProvider {
 
     private final ProductServiceProvider productServiceProvider;
-    private final OrderServiceProvider orderServiceProvider;
     private final CartServiceProvider cartServiceProvider;
 
     public RecommendationServiceProviderImpl(
             ProductServiceProvider productServiceProvider,
-            OrderServiceProvider orderServiceProvider,
             CartServiceProvider cartServiceProvider) {
         this.productServiceProvider = productServiceProvider;
-        this.orderServiceProvider = orderServiceProvider;
         this.cartServiceProvider = cartServiceProvider;
     }
 
@@ -63,7 +60,7 @@ public class RecommendationServiceProviderImpl implements RecommendationServiceP
         // Since OrderServiceProvider doesn't have this method, we need to work with what we have
         // This is a limitation - we might need to extend the SPI interfaces
 
-        // For now, we'll return empty list as we can't access order items through SPI
+        // For now, we'll return an empty list as we can't access order items through SPI
         // In a real implementation, we'd need to extend OrderServiceProvider
         return Collections.emptyList();
     }
@@ -104,14 +101,14 @@ public class RecommendationServiceProviderImpl implements RecommendationServiceP
     @Override
     public Map<Long, Long> getFrequentlyBoughtTogetherProductCounts(Long productId) {
         // This is complex and would require extending the SPI interfaces significantly
-        // For now, return empty map
+        // For now, return an empty map
         return Collections.emptyMap();
     }
 
     @Override
     public Map<Long, Long> getPopularProductCounts() {
         // This would require extending ProductServiceProvider or OrderServiceProvider
-        // For now, return empty map
+        // For now, return an empty map
         return Collections.emptyMap();
     }
 }

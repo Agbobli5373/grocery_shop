@@ -44,9 +44,6 @@ class AdminServiceTest {
     private ProductServiceProvider productServiceProvider;
 
     @Mock
-    private AuthServiceProvider authServiceProvider;
-
-    @Mock
     private UserRepository userRepository;
 
     private AdminService adminService;
@@ -59,7 +56,6 @@ class AdminServiceTest {
         adminService = new AdminServiceImpl(
             orderServiceProvider,
             productServiceProvider,
-            authServiceProvider,
             userRepository
         );
 

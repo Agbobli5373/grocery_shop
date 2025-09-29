@@ -1,55 +1,101 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { CartItem } from '@/types';
+import { apiService, CartItem, Cart } from '../api/service';
 
-type CartState = {
+interface CartState {
     items: CartItem[];
     total: number;
-    addItem: (product: Omit<CartItem, 'quantity'>, quantity: number) => void;
-    removeItem: (productId: string) => void;
-    updateQuantity: (productId: string, quantity: number) => void;
+    loading: boolean;
+    error: string | null;
+
+    // Actions
+    fetchCart: () => Promise<void>;
+    addItem: (productId: string, quantity: number) => Promise<void>;
+    updateItem: (itemId: string, quantity: number) => Promise<void>;
+    removeItem: (itemId: string) => Promise<void>;
     clearCart: () => void;
+    clearError: () => void;
 }
 
-// Cart Store
 export const useCartStore = create<CartState>()(
     devtools(
         (set, get) => ({
             items: [],
             total: 0,
+            loading: false,
+            error: null,
 
-            addItem: (product, quantity) => {
-                const { items } = get();
-                const existingItem = items.find(item => item.productId === product.productId);
-
-                if (existingItem) {
-                    existingItem.quantity += quantity;
-                } else {
-                    items.push({ ...product, quantity });
-                }
-
-                const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                set({ items: [...items], total });
-            },
-
-            removeItem: (productId) => {
-                const { items } = get();
-                const filteredItems = items.filter(item => item.productId !== productId);
-                const total = filteredItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                set({ items: filteredItems, total });
-            },
-
-            updateQuantity: (productId, quantity) => {
-                const { items } = get();
-                const item = items.find(item => item.productId === productId);
-                if (item) {
-                    item.quantity = quantity;
-                    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                    set({ items: [...items], total });
+            fetchCart: async () => {
+                set({ loading: true, error: null });
+                try {
+                    const cart = await apiService.getCart();
+                    set({
+                        items: cart.items,
+                        total: cart.total,
+                        loading: false
+                    });
+                } catch (error) {
+                    set({
+                        error: error instanceof Error ? error.message : 'Failed to fetch cart',
+                        loading: false
+                    });
                 }
             },
 
-            clearCart: () => set({ items: [], total: 0 }),
+            addItem: async (productId: string, quantity: number) => {
+                set({ loading: true, error: null });
+                try {
+                    const cart = await apiService.addToCart({ productId, quantity });
+                    set({
+                        items: cart.items,
+                        total: cart.total,
+                        loading: false
+                    });
+                } catch (error) {
+                    set({
+                        error: error instanceof Error ? error.message : 'Failed to add item to cart',
+                        loading: false
+                    });
+                }
+            },
+
+            updateItem: async (itemId: string, quantity: number) => {
+                set({ loading: true, error: null });
+                try {
+                    const cart = await apiService.updateCartItem(itemId, { quantity });
+                    set({
+                        items: cart.items,
+                        total: cart.total,
+                        loading: false
+                    });
+                } catch (error) {
+                    set({
+                        error: error instanceof Error ? error.message : 'Failed to update cart item',
+                        loading: false
+                    });
+                }
+            },
+
+            removeItem: async (itemId: string) => {
+                set({ loading: true, error: null });
+                try {
+                    const cart = await apiService.removeFromCart(itemId);
+                    set({
+                        items: cart.items,
+                        total: cart.total,
+                        loading: false
+                    });
+                } catch (error) {
+                    set({
+                        error: error instanceof Error ? error.message : 'Failed to remove item from cart',
+                        loading: false
+                    });
+                }
+            },
+
+            clearCart: () => set({ items: [], total: 0, error: null }),
+
+            clearError: () => set({ error: null }),
         }),
         { name: 'cart-store' }
     )

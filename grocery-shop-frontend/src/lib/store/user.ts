@@ -7,7 +7,7 @@ interface User {
     email: string;
     firstName: string;
     lastName: string;
-    role: 'customer' | 'admin';
+    role: 'CUSTOMER' | 'ADMIN';
 }
 
 interface LoginCredentials {
@@ -18,7 +18,7 @@ interface LoginCredentials {
 interface UserState {
     user: User | null;
     isAuthenticated: boolean;
-    login: (credentials: LoginCredentials) => Promise<void>;
+    login: (user: User) => void;
     logout: () => void;
     updateProfile: (profile: Partial<User>) => Promise<void>;
 }
@@ -30,11 +30,8 @@ export const useUserStore = create<UserState>()(
             user: null,
             isAuthenticated: false,
 
-            login: async (credentials) => {
-                // TODO: Implement API call
-                // const response = await api.login(credentials);
-                // set({ user: response.user, isAuthenticated: true });
-                console.log('Login with:', credentials);
+            login: (user) => {
+                set({ user, isAuthenticated: true });
             },
 
             logout: () => {

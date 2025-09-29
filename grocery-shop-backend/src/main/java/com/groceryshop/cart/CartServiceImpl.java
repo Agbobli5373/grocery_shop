@@ -196,9 +196,7 @@ public class CartServiceImpl implements CartService {
         Cart cart = getUserCart(userId);
         List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
 
-        for (CartItem item : items) {
-            cartItemRepository.delete(item);
-        }
+        cartItemRepository.deleteAll(items);
 
         cart.setTotalAmount(BigDecimal.ZERO);
         cartRepository.save(cart);
@@ -211,7 +209,7 @@ public class CartServiceImpl implements CartService {
     public Order checkout(Long userId, CheckoutRequest request) {
         Cart cart = getUserCart(userId);
 
-        // Check if cart has items
+        // Check if the cart has items
         List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
         if (items.isEmpty()) {
             throw new RuntimeException("Cannot checkout empty cart");
@@ -225,7 +223,7 @@ public class CartServiceImpl implements CartService {
             }
         }
 
-        // Create order using OrderService (this will handle stock updates and order creation)
+        // Create an order using OrderService (this will handle stock updates and order creation)
         Order order = orderService.createOrder(userId, request.deliveryAddress());
 
         // Clear the cart after successful order creation

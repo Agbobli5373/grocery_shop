@@ -4,6 +4,8 @@ import com.groceryshop.sse.SseService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
  * Event handler that bridges RabbitMQ order events to SSE streams.
  */
@@ -26,7 +28,7 @@ public class OrderSseEventHandler {
 
         Long customerId = order.getCustomer().getId();
 
-        // Send to specific order tracking emitter
+        // Send it to a specific order tracking emitter
         String orderEmitterId = "order-" + event.orderId() + "-user-" + customerId;
         if (sseService.hasEmitter(orderEmitterId)) {
             sseService.sendEvent(orderEmitterId, new com.groceryshop.sse.SseEvent(
@@ -35,7 +37,7 @@ public class OrderSseEventHandler {
             ));
         }
 
-        // Also send to user's general notification stream
+        // Also send it to the user's general notification stream
         String userEmitterId = "notifications-user-" + customerId;
         if (sseService.hasEmitter(userEmitterId)) {
             sseService.sendEvent(userEmitterId, new com.groceryshop.sse.SseEvent(
@@ -53,7 +55,7 @@ public class OrderSseEventHandler {
 
     @RabbitListener(queues = "order-events")
     public void handleOrderCreated(OrderCreatedEvent event) {
-        // Send to user's general notification stream
+        // Send it to the user's general notification stream
         String userEmitterId = "notifications-user-" + event.customerId();
         if (sseService.hasEmitter(userEmitterId)) {
             // For order created, we need to determine the initial status
@@ -74,68 +76,15 @@ public class OrderSseEventHandler {
     }
 
     /**
-     * DTO for order status events in SSE.
-     */
-    public static class OrderStatusEvent {
-        private Long orderId;
-        private OrderStatus status;
-        private java.time.LocalDateTime timestamp;
-
-        public OrderStatusEvent(Long orderId, OrderStatus status, java.time.LocalDateTime timestamp) {
-            this.orderId = orderId;
-            this.status = status;
-            this.timestamp = timestamp;
-        }
-
-        public Long getOrderId() {
-            return orderId;
-        }
-
-        public OrderStatus getStatus() {
-            return status;
-        }
-
-        public java.time.LocalDateTime getTimestamp() {
-            return timestamp;
-        }
+         * DTO for order status events in SSE.
+         */
+        public record OrderStatusEvent(Long orderId, OrderStatus status, LocalDateTime timestamp) {
     }
 
     /**
-     * DTO for order notification events in SSE.
-     */
-    public static class OrderNotificationEvent {
-        private String title;
-        private String message;
-        private Long orderId;
-        private OrderStatus status;
-        private java.time.LocalDateTime timestamp;
-
-        public OrderNotificationEvent(String title, String message, Long orderId, OrderStatus status, java.time.LocalDateTime timestamp) {
-            this.title = title;
-            this.message = message;
-            this.orderId = orderId;
-            this.status = status;
-            this.timestamp = timestamp;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public Long getOrderId() {
-            return orderId;
-        }
-
-        public OrderStatus getStatus() {
-            return status;
-        }
-
-        public java.time.LocalDateTime getTimestamp() {
-            return timestamp;
-        }
+         * DTO for order notification events in SSE.
+         */
+        public record OrderNotificationEvent(String title, String message, Long orderId, OrderStatus status,
+                                             LocalDateTime timestamp) {
     }
 }

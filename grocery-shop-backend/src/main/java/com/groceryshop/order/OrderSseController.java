@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.LocalDateTime;
+
 /**
  * SSE Controller for real-time order tracking.
  */
@@ -38,7 +40,7 @@ public class OrderSseController {
         Long userId = getUserIdFromAuthentication(authentication);
         Order order = orderService.getOrderById(orderId);
 
-        // Check if user owns the order or is admin
+        // Check if the user owns the order or is admin
         if (!order.getCustomer().getId().equals(userId) && !isAdmin(authentication)) {
             throw new RuntimeException("Access denied to order events");
         }
@@ -77,29 +79,8 @@ public class OrderSseController {
     }
 
     /**
-     * DTO for order status events.
-     */
-    public static class OrderStatusEvent {
-        private Long orderId;
-        private OrderStatus status;
-        private java.time.LocalDateTime timestamp;
-
-        public OrderStatusEvent(Long orderId, OrderStatus status, java.time.LocalDateTime timestamp) {
-            this.orderId = orderId;
-            this.status = status;
-            this.timestamp = timestamp;
-        }
-
-        public Long getOrderId() {
-            return orderId;
-        }
-
-        public OrderStatus getStatus() {
-            return status;
-        }
-
-        public java.time.LocalDateTime getTimestamp() {
-            return timestamp;
-        }
+         * DTO for order status events.
+         */
+        public record OrderStatusEvent(Long orderId, OrderStatus status, LocalDateTime timestamp) {
     }
 }

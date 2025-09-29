@@ -2,7 +2,6 @@ package com.groceryshop.admin;
 
 import com.groceryshop.auth.User;
 import com.groceryshop.auth.UserRepository;
-import com.groceryshop.auth.spi.AuthServiceProvider;
 import com.groceryshop.order.Order;
 import com.groceryshop.order.OrderStatus;
 import com.groceryshop.order.spi.OrderServiceProvider;
@@ -17,7 +16,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,18 +31,25 @@ public class AdminServiceImpl implements AdminService {
 
     private final OrderServiceProvider orderServiceProvider;
     private final ProductServiceProvider productServiceProvider;
-    private final AuthServiceProvider authServiceProvider;
-    private final UserRepository userRepository; // Keep direct access for user analytics
+    private final UserRepository userRepository; // Keep direct access to user analytics
 
     public AdminServiceImpl(
             OrderServiceProvider orderServiceProvider,
             ProductServiceProvider productServiceProvider,
-            AuthServiceProvider authServiceProvider,
             UserRepository userRepository) {
         this.orderServiceProvider = orderServiceProvider;
         this.productServiceProvider = productServiceProvider;
-        this.authServiceProvider = authServiceProvider;
         this.userRepository = userRepository;
+    }
+
+    // Backwards-compatible constructor overload used in some tests (accepts an extra AuthServiceProvider)
+    public AdminServiceImpl(
+            OrderServiceProvider orderServiceProvider,
+            ProductServiceProvider productServiceProvider,
+            com.groceryshop.auth.spi.AuthServiceProvider authServiceProvider,
+            UserRepository userRepository) {
+        this(orderServiceProvider, productServiceProvider, userRepository);
+        // authServiceProvider is accepted for compatibility; not used in current implementation
     }
 
     @Override
@@ -64,8 +69,8 @@ public class AdminServiceImpl implements AdminService {
         double averageOrderValue = totalOrders > 0 ?
             totalRevenue.divide(BigDecimal.valueOf(totalOrders), 2, RoundingMode.HALF_UP).doubleValue() : 0.0;
 
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+        LocalDateTime startOfDay = AdminAnalyticsUtils.toStartOfDay(LocalDate.now());
+        LocalDateTime endOfDay = AdminAnalyticsUtils.toEndOfDay(LocalDate.now());
         long ordersToday = orderServiceProvider.countOrdersByDateRange(startOfDay, endOfDay);
 
         return new DashboardMetrics(
@@ -84,15 +89,13 @@ public class AdminServiceImpl implements AdminService {
     public SalesAnalytics getSalesAnalytics(LocalDate startDate, LocalDate endDate) {
         log.debug("Calculating sales analytics from {} to {}", startDate, endDate);
 
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+        LocalDateTime startDateTime = AdminAnalyticsUtils.toStartOfDay(startDate);
+        LocalDateTime endDateTime = AdminAnalyticsUtils.toEndOfDay(endDate);
 
         List<Order> ordersInRange = orderServiceProvider.findOrdersByDateRangeAndStatus(
             startDateTime, endDateTime, OrderStatus.DELIVERED);
 
-        BigDecimal totalRevenue = ordersInRange.stream()
-            .map(Order::getTotalAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalRevenue = AdminAnalyticsUtils.sumTotalRevenue(ordersInRange);
 
         long totalOrders = ordersInRange.size();
 
@@ -101,35 +104,10 @@ public class AdminServiceImpl implements AdminService {
         revenueByCategory.put("All Categories", totalRevenue);
 
         // Orders by status
-        Map<OrderStatus, Long> ordersByStatusMap = Arrays.stream(OrderStatus.values())
-            .collect(Collectors.toMap(
-                status -> status,
-                status -> orderServiceProvider.countOrdersByStatusAndDateRange(status, startDateTime, endDateTime)
-            ));
+        Map<String, Long> ordersByStatus = AdminAnalyticsUtils.buildOrdersByStatus(orderServiceProvider, startDateTime, endDateTime);
 
-        Map<String, Long> ordersByStatus = ordersByStatusMap.entrySet().stream()
-            .collect(Collectors.toMap(
-                entry -> entry.getKey().name(),
-                Map.Entry::getValue
-            ));
-
-        // Daily sales data (simplified)
-        List<DailySalesData> dailySales = new ArrayList<>();
-        LocalDate current = startDate;
-        while (!current.isAfter(endDate)) {
-            LocalDateTime dayStart = current.atStartOfDay();
-            LocalDateTime dayEnd = current.atTime(LocalTime.MAX);
-
-            List<Order> dayOrders = orderServiceProvider.findOrdersByDateRangeAndStatus(
-                dayStart, dayEnd, OrderStatus.DELIVERED);
-
-            BigDecimal dayRevenue = dayOrders.stream()
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            dailySales.add(new DailySalesData(current, dayRevenue, dayOrders.size()));
-            current = current.plusDays(1);
-        }
+        // Daily sales data (uses reusable helper)
+        List<DailySalesData> dailySales = AdminAnalyticsUtils.buildDailySales(orderServiceProvider, startDate, endDate);
 
         return new SalesAnalytics(totalRevenue, totalOrders, revenueByCategory, ordersByStatus, dailySales);
     }
@@ -165,19 +143,9 @@ public class AdminServiceImpl implements AdminService {
     public List<ProductSalesData> getTopSellingProducts(int limit) {
         log.debug("Calculating top {} selling products", limit);
 
-        // This is a simplified implementation
-        // In a real scenario, you'd have order item analytics
-        // For now, we'll return products sorted by stock quantity (inverse logic)
         List<Product> products = productServiceProvider.findAllProducts(0, limit);
 
-        return products.stream()
-            .map(product -> {
-                // Mock sales data - in real implementation, calculate from order items
-                long totalSold = Math.max(0, 100 - product.getStockQuantity()); // Mock calculation
-                BigDecimal totalRevenue = product.getPrice().multiply(BigDecimal.valueOf(totalSold));
-                return new ProductSalesData(product, totalSold, totalRevenue);
-            })
-            .collect(Collectors.toList());
+        return AdminAnalyticsUtils.mapProductsToSalesData(products);
     }
 
     @Override
@@ -186,7 +154,7 @@ public class AdminServiceImpl implements AdminService {
 
         long totalCustomers = userRepository.countByRole(com.groceryshop.auth.UserRole.CUSTOMER);
 
-        // Active customers (customers with orders in last 30 days)
+        // Active customers (customers with orders in the last 30 days)
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
         long activeCustomers = orderServiceProvider.findDistinctCustomersWithOrdersAfter(thirtyDaysAgo).size();
 
@@ -198,20 +166,8 @@ public class AdminServiceImpl implements AdminService {
         double averageOrdersPerCustomer = totalCustomers > 0 ?
             (double) orderServiceProvider.countOrders() / totalCustomers : 0.0;
 
-        // Top customers (simplified - based on order count)
-        List<TopCustomerData> topCustomers = orderServiceProvider.findTopCustomersByOrderCount(5).stream()
-            .map(result -> {
-                User customer = (User) result[0];
-                Long orderCount = (Long) result[1];
-                BigDecimal totalSpent = (BigDecimal) result[2];
-                return new TopCustomerData(
-                    customer.getFirstName() + " " + customer.getLastName(),
-                    customer.getEmail(),
-                    orderCount,
-                    totalSpent
-                );
-            })
-            .collect(Collectors.toList());
+        // Top customers (uses reusable helper)
+        List<TopCustomerData> topCustomers = AdminAnalyticsUtils.mapTopCustomers(orderServiceProvider.findTopCustomersByOrderCount(5));
 
         return new CustomerAnalytics(
             totalCustomers,

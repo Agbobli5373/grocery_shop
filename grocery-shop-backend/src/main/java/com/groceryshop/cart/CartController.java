@@ -9,6 +9,7 @@ import com.groceryshop.shared.dto.response.CartResponse;
 import com.groceryshop.shared.dto.response.OrderResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -145,6 +146,11 @@ public class CartController {
      * Maps Order entity to OrderResponse DTO.
      */
     private OrderResponse mapToOrderResponse(Order order) {
+        return getOrderResponse(order);
+    }
+
+    @NotNull
+    public static OrderResponse getOrderResponse(Order order) {
         List<OrderResponse.OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> new OrderResponse.OrderItemResponse(
                     item.getId(),

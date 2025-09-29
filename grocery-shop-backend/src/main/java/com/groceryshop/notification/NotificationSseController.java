@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.LocalDateTime;
+
 /**
  * SSE Controller for real-time user notifications.
  */
@@ -59,35 +61,20 @@ public class NotificationSseController {
     }
 
     /**
-     * DTO for connection events.
-     */
-    public static class ConnectionEvent {
-        private String message;
-        private java.time.LocalDateTime timestamp;
-
-        public ConnectionEvent(String message, java.time.LocalDateTime timestamp) {
-            this.message = message;
-            this.timestamp = timestamp;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public java.time.LocalDateTime getTimestamp() {
-            return timestamp;
-        }
+         * DTO for connection events.
+         */
+        public record ConnectionEvent(String message, LocalDateTime timestamp) {
     }
 
     /**
      * DTO for notification events.
      */
     public static class NotificationEvent {
-        private String type;
-        private String title;
-        private String message;
-        private Object data;
-        private java.time.LocalDateTime timestamp;
+        private final String type;
+        private final String title;
+        private final String message;
+        private final Object data;
+        private final java.time.LocalDateTime timestamp;
 
         public NotificationEvent(String type, String title, String message, Object data) {
             this.type = type;

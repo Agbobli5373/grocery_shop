@@ -2,161 +2,39 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
 import { ArrowRight, Truck, Shield, Clock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductCard } from "@/components/products/product-card";
-import type { Product, Category } from "@/types";
+import { useProductsStore } from "@/lib/store/products";
 
-// Lightweight seed data for the homepage. In a real app this will come from the API.
-const categories: Category[] = [
-  {
-    id: "produce",
-    name: "Fresh Produce",
-    slug: "fresh-produce",
-    image:
-      "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1280&auto=format&fit=crop",
-    itemCount: 120,
-  },
-  {
-    id: "grains",
-    name: "Grains & Cereals",
-    slug: "grains-cereals",
-    image:
-      "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=1280&auto=format&fit=crop",
-    itemCount: 80,
-  },
-  {
-    id: "protein",
-    name: "Protein & Meat",
-    slug: "protein-meat",
-    image:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1280&auto=format&fit=crop",
-    itemCount: 65,
-  },
-  {
-    id: "spices",
-    name: "Spices & Seasonings",
-    slug: "spices-seasonings",
-    image:
-      "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1280&auto=format&fit=crop",
-    itemCount: 54,
-  },
-];
-
-const featured: Product[] = [
-  {
-    id: "yam",
-    name: "Pona Yam (Large)",
-    description: "Premium Ghanaian yam, perfect for ampesi & fufu",
-    price: 35,
-    originalPrice: 42,
-    image:
-      "https://images.unsplash.com/photo-1597733336794-12d05021d510?q=80&w=1200&auto=format&fit=crop",
-    category: "Fresh Produce",
-    inStock: true,
-    rating: 4.7,
-    reviewCount: 210,
-    unit: "per tuber",
-  },
-  {
-    id: "plantain",
-    name: "Ripe Plantain",
-    description: "Sweet plantain for kelewele & ampesi",
-    price: 18,
-    image:
-      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=1200&auto=format&fit=crop",
-    category: "Fresh Produce",
-    inStock: true,
-    rating: 4.6,
-    reviewCount: 160,
-    unit: "bundle",
-  },
-  {
-    id: "tomato",
-    name: "Fresh Tomatoes",
-    description: "Vine-ripened tomatoes from local farms",
-    price: 22,
-    originalPrice: 25,
-    image:
-      "https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=1200&auto=format&fit=crop",
-    category: "Fresh Produce",
-    inStock: true,
-    rating: 4.5,
-    reviewCount: 98,
-    unit: "per kg",
-  },
-  {
-    id: "gari",
-    name: "Gari (Ijebu)",
-    description: "Crunchy gari – perfect with beans or soaked",
-    price: 28,
-    image:
-      "https://images.unsplash.com/photo-1566478989037-eec170784d0b?q=80&w=1200&auto=format&fit=crop",
-    category: "Grains & Cereals",
-    inStock: true,
-    rating: 4.2,
-    reviewCount: 45,
-    unit: "2kg bag",
-  },
-];
-
-const bestSellers: Product[] = [
-  {
-    id: "eggs",
-    name: "Farm Fresh Eggs",
-    description: "Free-range eggs from local farms",
-    price: 30,
-    image:
-      "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?q=80&w=1200&auto=format&fit=crop",
-    category: "Protein",
-    inStock: true,
-    rating: 4.8,
-    reviewCount: 320,
-    unit: "crate (30)",
-  },
-  {
-    id: "tilapia",
-    name: "Fresh Tilapia",
-    description: "Cleaned and ready to grill",
-    price: 48,
-    image:
-      "https://images.unsplash.com/photo-1559847844-5315695dadae?q=80&w=1200&auto=format&fit=crop",
-    category: "Protein",
-    inStock: true,
-    rating: 4.4,
-    reviewCount: 90,
-    unit: "per kg",
-  },
-  {
-    id: "rice",
-    name: "Jasmine Rice",
-    description: "Premium long-grain jasmine rice",
-    price: 85,
-    image:
-      "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=1600&auto=format&fit=crop",
-    category: "Grains",
-    inStock: true,
-    rating: 4.3,
-    reviewCount: 140,
-    unit: "5kg bag",
-  },
-  {
-    id: "shito",
-    name: "Homemade Shito",
-    description: "Spicy Ghanaian pepper sauce",
-    price: 25,
-    image:
-      "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=1200&auto=format&fit=crop",
-    category: "Spices",
-    inStock: true,
-    rating: 4.6,
-    reviewCount: 200,
-    unit: "300ml jar",
-  },
-];
+// Category images mapping
+const categoryImages: Record<string, string> = {
+  "Fresh Produce": "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1280&auto=format&fit=crop",
+  "Grains & Cereals": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=1280&auto=format&fit=crop",
+  "Protein & Meat": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1280&auto=format&fit=crop",
+  "Spices & Seasonings": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1280&auto=format&fit=crop",
+};
 
 export default function HomePage() {
+  const { featuredProducts, categories, fetchFeaturedProducts, fetchProducts } = useProductsStore();
+
+  useEffect(() => {
+    // Fetch featured products and categories on component mount
+    fetchFeaturedProducts();
+    fetchProducts({ size: 20 }); // Fetch some products to get categories
+  }, [fetchFeaturedProducts, fetchProducts]);
+
+  // Create category display objects
+  const categoryDisplay = categories.slice(0, 4).map((categoryName, index) => ({
+    id: categoryName.toLowerCase().replace(/\s+/g, '-'),
+    name: categoryName,
+    slug: categoryName.toLowerCase().replace(/\s+/g, '-'),
+    image: categoryImages[categoryName] || "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1280&auto=format&fit=crop",
+    itemCount: 50, // Placeholder - could be calculated from products
+  }));
+
   return (
     <main className="min-h-screen bg-white">
       {/* HERO */}
@@ -233,7 +111,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((c) => (
+            {categoryDisplay.map((c) => (
               <Link
                 key={c.id}
                 href={`/categories/${c.slug}`}
@@ -322,7 +200,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {featured.map((p) => (
+            {featuredProducts.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
@@ -502,7 +380,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {bestSellers.map((p) => (
+            {featuredProducts.slice(4, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>

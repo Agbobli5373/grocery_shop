@@ -4,6 +4,7 @@ import com.groceryshop.product.Product;
 import com.groceryshop.product.ProductCategory;
 import com.groceryshop.product.ProductStatus;
 import com.groceryshop.recommendation.spi.RecommendationServiceProvider;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,7 +25,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     @Override
     public List<Product> getPersonalizedRecommendations(Long userId, int limit) {
-        // Get user's purchase history
+        // Get a user's purchase history
         List<Long> purchasedProductIds = recommendationServiceProvider.getUserPurchasedProductIds(userId);
 
         if (purchasedProductIds.isEmpty()) {
@@ -35,12 +36,12 @@ public class RecommendationServiceImpl implements RecommendationService {
         // Get user's preferred categories based on purchase history
         Map<ProductCategory, Long> categoryPreferences = recommendationServiceProvider.getUserCategoryPreferences(userId);
 
-        // Find products in preferred categories that user hasn't purchased
+        // Find products in preferred categories that the user hasn't purchased
         List<ProductCategory> preferredCategories = categoryPreferences.entrySet()
                 .stream()
                 .sorted(Map.Entry.<ProductCategory, Long>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+                .toList();
 
         List<Product> recommendations = new ArrayList<>();
         for (ProductCategory category : preferredCategories) {
@@ -49,7 +50,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                     .stream()
                     .filter(product -> !purchasedProductIds.contains(product.getId()))
                     .filter(Product::isInStock)
-                    .collect(Collectors.toList());
+                    .toList();
 
             recommendations.addAll(categoryProducts);
             if (recommendations.size() >= limit) break;
@@ -61,7 +62,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                     .stream()
                     .filter(product -> !purchasedProductIds.contains(product.getId()))
                     .filter(product -> !recommendations.contains(product))
-                    .collect(Collectors.toList());
+                    .toList();
             recommendations.addAll(popularProducts);
         }
 
@@ -89,7 +90,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                         .stream()
                         .filter(Product::isInStock)
                         .limit(limit / 2) // Distribute recommendations across categories
-                        .collect(Collectors.toList());
+                        .toList();
                 recommendations.addAll(categoryProducts);
             }
         }
@@ -112,6 +113,11 @@ public class RecommendationServiceImpl implements RecommendationService {
         // Get popular products based on purchase counts
         Map<Long, Long> productPurchaseCounts = recommendationServiceProvider.getPopularProductCounts();
 
+        return getProducts(limit, productPurchaseCounts);
+    }
+
+    @NotNull
+    private List<Product> getProducts(int limit, Map<Long, Long> productPurchaseCounts) {
         return productPurchaseCounts.entrySet()
                 .stream()
                 .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
@@ -139,22 +145,7 @@ public class RecommendationServiceImpl implements RecommendationService {
             return getPopularProducts(limit);
         }
 
-        return coPurchaseCounts.entrySet()
-                .stream()
-                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
-                .map(entry -> {
-                    // Find product by ID from all products
-                    return recommendationServiceProvider.findAllProducts(0, Integer.MAX_VALUE)
-                            .stream()
-                            .filter(product -> product.getId().equals(entry.getKey()))
-                            .findFirst()
-                            .orElse(null);
-                })
-                .filter(Objects::nonNull)
-                .filter(product -> product.getStatus() == ProductStatus.ACTIVE)
-                .filter(Product::isInStock)
-                .limit(limit)
-                .collect(Collectors.toList());
+        return getProducts(limit, coPurchaseCounts);
     }
 
     @Override

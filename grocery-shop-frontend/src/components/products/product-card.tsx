@@ -5,36 +5,28 @@ import { Star, Plus, Minus } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { useCartStore } from "@/lib/store/cart";
-import type { Product } from "@/types";
+import type { Product } from "@/lib/api/service";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem, items, updateQuantity } = useCartStore();
+  const { addItem, items, updateItem, removeItem } = useCartStore();
 
   const cartItem = items.find((item) => item.productId === product.id);
   const quantity = cartItem?.quantity || 0;
 
   const handleAddToCart = () => {
-    addItem(
-      {
-        id: `cart-${product.id}`,
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-      },
-      1
-    );
+    addItem(product.id, 1);
   };
 
   const handleUpdateQuantity = (newQuantity: number) => {
     if (newQuantity === 0 && cartItem) {
       // Remove from cart
-      updateQuantity(product.id, 0);
+      removeItem(cartItem.id);
     } else if (cartItem) {
-      updateQuantity(product.id, newQuantity);
+      updateItem(cartItem.id, newQuantity);
     }
   };
 
@@ -52,7 +44,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Product Image */}
         <div className="relative aspect-square overflow-hidden rounded-t-lg bg-gray-100">
           <Image
-            src={product.image}
+            src={product.image || "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=400&auto=format&fit=crop"}
             alt={product.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-200"

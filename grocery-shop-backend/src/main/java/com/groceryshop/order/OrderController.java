@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.groceryshop.cart.CartController.getOrderResponse;
+
 /**
  * REST Controller for order management operations.
  */
@@ -74,7 +76,7 @@ public class OrderController {
         Long userId = getUserIdFromAuthentication(authentication);
         Order order = orderService.getOrderById(id);
 
-        // Check if user owns the order
+        // Check if a user owns the order
         if (!order.getCustomer().getId().equals(userId)) {
             return ResponseEntity.status(403).build();
         }
@@ -125,29 +127,6 @@ public class OrderController {
      * Maps Order entity to OrderResponse DTO.
      */
     private OrderResponse mapToOrderResponse(Order order) {
-        List<OrderResponse.OrderItemResponse> itemResponses = order.getItems().stream()
-                .map(item -> new OrderResponse.OrderItemResponse(
-                    item.getId(),
-                    item.getProduct().getId(),
-                    item.getProduct().getName(),
-                    item.getQuantity(),
-                    item.getUnitPrice(),
-                    item.getTotalPrice()
-                ))
-                .collect(Collectors.toList());
-
-        return new OrderResponse(
-            order.getId(),
-            order.getCustomer().getId(),
-            order.getCustomer().getEmail(),
-            order.getTotalAmount(),
-            order.getStatus(),
-            order.getDeliveryAddress(),
-            order.getOrderDate(),
-            order.getDeliveryDate(),
-            order.getCreatedAt(),
-            order.getUpdatedAt(),
-            itemResponses
-        );
+        return getOrderResponse(order);
     }
 }

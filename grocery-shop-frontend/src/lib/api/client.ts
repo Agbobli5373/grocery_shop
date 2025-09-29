@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Axios instance with interceptors
 const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
     timeout: 10000,
 });
 

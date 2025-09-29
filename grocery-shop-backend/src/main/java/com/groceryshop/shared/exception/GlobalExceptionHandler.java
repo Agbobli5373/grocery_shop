@@ -136,7 +136,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handle resource not found exceptions
+     * Handle resource didn't found exceptions
      */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
@@ -153,6 +153,28 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handle user already exists (conflict) exceptions
+     */
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(
+            UserAlreadyExistsException ex, WebRequest request) {
+
+        logger.warn("User already exists: {}", ex.getMessage());
+
+        HttpStatus status = ex.getHttpStatus() != null ? ex.getHttpStatus() : HttpStatus.CONFLICT;
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            status.value(),
+            "Conflict",
+            ex.getMessage(),
+            LocalDateTime.now(),
+            request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorResponse, status);
     }
 
     /**
@@ -179,11 +201,11 @@ public class GlobalExceptionHandler {
      * Error response DTO
      */
     public static class ErrorResponse {
-        private int status;
-        private String error;
-        private String message;
-        private LocalDateTime timestamp;
-        private String path;
+        private final int status;
+        private final String error;
+        private final String message;
+        private final LocalDateTime timestamp;
+        private final String path;
 
         public ErrorResponse(int status, String error, String message, LocalDateTime timestamp, String path) {
             this.status = status;
@@ -205,7 +227,7 @@ public class GlobalExceptionHandler {
      * Validation error response DTO
      */
     public static class ValidationErrorResponse extends ErrorResponse {
-        private Map<String, String> fieldErrors;
+        private final Map<String, String> fieldErrors;
 
         public ValidationErrorResponse(int status, String error, String message,
                                      Map<String, String> fieldErrors, LocalDateTime timestamp, String path) {

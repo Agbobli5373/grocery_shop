@@ -31,7 +31,7 @@ public class OrderEventHandler {
         log.info("Processing order created event for order ID: {}", event.orderId());
 
         try {
-            // Update order status to processing
+            // Update order status to process
             orderService.updateOrderStatus(event.orderId(), OrderStatus.PROCESSING);
 
             // Publish order processing event

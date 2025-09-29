@@ -2,22 +2,23 @@
 
 import { Fragment } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { X, Plus, Minus, ShoppingBag } from "lucide-react";
 import { Button } from "../ui/button";
 import { useCartStore } from "@/lib/store/cart";
 import { useUIStore } from "@/lib/store/ui";
 
 export function CartDrawer() {
-  const { items, total, updateQuantity, removeItem } = useCartStore();
+  const { items, total, updateItem, removeItem } = useCartStore();
   const { isCartOpen, toggleCart } = useUIStore();
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  const handleUpdateQuantity = (productId: string, newQuantity: number) => {
+  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity === 0) {
-      removeItem(productId);
+      removeItem(itemId);
     } else {
-      updateQuantity(productId, newQuantity);
+      updateItem(itemId, newQuantity);
     }
   };
 
@@ -66,11 +67,11 @@ export function CartDrawer() {
                     key={item.id}
                     className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
                   >
-                    {item.image && (
+                    {item.product.image && (
                       <div className="relative w-16 h-16 bg-gray-200 rounded-md overflow-hidden">
                         <Image
-                          src={item.image}
-                          alt={item.name}
+                          src={item.product.image}
+                          alt={item.product.name}
                           fill
                           className="object-cover"
                         />
@@ -79,11 +80,11 @@ export function CartDrawer() {
 
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
-                        {item.name}
+                        {item.product.name}
                       </h3>
                       <p className="text-sm text-gray-500">
                         ₵{item.price.toFixed(2)}{" "}
-                        {item.unit && `per ${item.unit}`}
+                        {item.product.unit && `per ${item.product.unit}`}
                       </p>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center space-x-2">
@@ -92,7 +93,7 @@ export function CartDrawer() {
                             size="sm"
                             onClick={() =>
                               handleUpdateQuantity(
-                                item.productId,
+                                item.id,
                                 item.quantity - 1
                               )
                             }
@@ -110,7 +111,7 @@ export function CartDrawer() {
                             size="sm"
                             onClick={() =>
                               handleUpdateQuantity(
-                                item.productId,
+                                item.id,
                                 item.quantity + 1
                               )
                             }
@@ -142,12 +143,14 @@ export function CartDrawer() {
               </div>
 
               <div className="space-y-2">
-                <Button
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  size="lg"
-                >
-                  Proceed to Checkout
-                </Button>
+                <Link href="/checkout" onClick={toggleCart}>
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    size="lg"
+                  >
+                    Proceed to Checkout
+                  </Button>
+                </Link>
 
                 <Button
                   variant="outline"

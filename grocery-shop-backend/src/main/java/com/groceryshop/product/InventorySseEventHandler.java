@@ -30,7 +30,7 @@ public class InventorySseEventHandler {
 
     @RabbitListener(queues = "inventory-events")
     public void handleStockUpdated(StockUpdatedEvent event) {
-        // Send to admin inventory alerts stream
+        // Send it to admin inventory alerts stream
         String adminEmitterId = "inventory-admin-alerts";
         if (sseService.hasEmitter(adminEmitterId)) {
             sseService.sendEvent(adminEmitterId, new com.groceryshop.sse.SseEvent(
@@ -44,11 +44,11 @@ public class InventorySseEventHandler {
      * DTO for low stock alert events in SSE.
      */
     public static class LowStockAlertData {
-        private Long productId;
-        private String productName;
-        private int currentStock;
-        private int threshold;
-        private java.time.LocalDateTime timestamp;
+        private final Long productId;
+        private final String productName;
+        private final int currentStock;
+        private final int threshold;
+        private final java.time.LocalDateTime timestamp;
 
         public LowStockAlertData(Long productId, String productName, int currentStock, int threshold) {
             this.productId = productId;
@@ -83,11 +83,11 @@ public class InventorySseEventHandler {
      * DTO for stock update events in SSE.
      */
     public static class StockUpdateData {
-        private Long productId;
-        private String productName;
-        private int newStock;
-        private int oldStock;
-        private java.time.LocalDateTime timestamp;
+        private final Long productId;
+        private final String productName;
+        private final int newStock;
+        private final int oldStock;
+        private final java.time.LocalDateTime timestamp;
 
         public StockUpdateData(Long productId, String productName, int newStock, int oldStock) {
             this.productId = productId;
