@@ -3,6 +3,7 @@ package com.groceryshop.auth;
 import com.groceryshop.shared.dto.request.LoginRequest;
 import com.groceryshop.shared.dto.request.RegisterRequest;
 import com.groceryshop.shared.dto.response.AuthResponse;
+import com.groceryshop.shared.dto.response.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,8 +64,18 @@ public class AuthController {
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Get current authenticated user information")
     @SecurityRequirement(name = "bearer-jwt")
-    public ResponseEntity<User> getCurrentUser() {
+    public ResponseEntity<UserResponse> getCurrentUser() {
         User user = authService.getCurrentUser();
-        return ResponseEntity.ok(user);
+        UserResponse response = new UserResponse(
+            user.getId(),
+            user.getEmail(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getRole(),
+            user.getStatus(),
+            user.getCreatedAt(),
+            user.getUpdatedAt()
+        );
+        return ResponseEntity.ok(response);
     }
 }
