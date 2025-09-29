@@ -3,7 +3,10 @@ package com.groceryshop.auth;
 import com.groceryshop.shared.dto.request.LoginRequest;
 import com.groceryshop.shared.dto.request.RegisterRequest;
 import com.groceryshop.shared.dto.response.AuthResponse;
+import com.groceryshop.shared.exception.AccountInactiveException;
+import com.groceryshop.shared.exception.InvalidCredentialsException;
 import com.groceryshop.shared.exception.ResourceNotFoundException;
+import com.groceryshop.shared.exception.UserAlreadyExistsException;
 import com.groceryshop.shared.exception.UserNotAuthenticatedException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -33,14 +36,14 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new RuntimeException("Account is not active");
+            throw new AccountInactiveException("Account is not active");
         }
 
         String token = jwtUtil.generateToken(user);
@@ -60,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public User register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         }
 
         User user = new User(
@@ -72,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
 
         User savedUser = userRepository.save(user);
 
-        // Publish user registered event
+        // Publish user-registered event
         eventPublisher.publishEvent(new UserRegisteredEvent(
             this,
             savedUser.getId(),

@@ -2,8 +2,6 @@ package com.groceryshop.recommendation;
 
 import com.groceryshop.cart.CartItem;
 import com.groceryshop.cart.spi.CartServiceProvider;
-import com.groceryshop.order.Order;
-import com.groceryshop.order.OrderItem;
 import com.groceryshop.order.spi.OrderServiceProvider;
 import com.groceryshop.product.Product;
 import com.groceryshop.product.ProductCategory;
