@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Production)
+  postgres:
+    image: postgres:15-alpine
+    container_name: grocery-shop-postgres-prod
+    environment:
+      POSTGRES_DB: grocery_prod
+      POSTGRES_USER: ${DB_USER:-grocery_prod_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+      - ./logs/postgres-prod:/var/log/postgresql
+    networks:
+      - grocery-prod-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-grocery_prod_user} -d grocery_prod"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    # Remove port mapping for production security
+    # ports:
+    #   - "5432:5432"
+
+  # RabbitMQ Message Broker (Production)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: grocery-shop-rabbitmq-prod
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_prod_data:/var/lib/rabbitmq
+      - ./logs/rabbitmq-prod:/var/log/rabbitmq
+    networks:
+      - grocery-prod-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    # Remove port mapping for production security
+    # ports:
+    #   - "5672:5672"
+    #   - "15672:15672"
+
+  # Spring Boot Backend (Production)
+  backend:
+    build:
+      context: ./grocery-shop-backend
+      dockerfile: Dockerfile
+    image: grocery-shop-backend:${BACKEND_TAG:-latest}
+    container_name: grocery-shop-backend-prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/grocery_prod
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-grocery_prod_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-admin}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      LOGGING_LEVEL_COM_GROCERYSHOP: WARN
+      SERVER_PORT: 8080
+      # Additional production configurations
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_FLYWAY_ENABLED: true
+    networks:
+      - grocery-prod-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    # Remove ports for production - use reverse proxy
+    # ports:
+    #   - "8080:8080"
+
+  # Next.js Frontend (Production)
+  frontend:
+    build:
+      context: ./grocery-shop-frontend
+      dockerfile: Dockerfile
+    image: grocery-shop-frontend:${FRONTEND_TAG:-latest}
+    container_name: grocery-shop-frontend-prod
+    environment:
+      NEXT_PUBLIC_API_URL: ${API_URL:-https://api.yourdomain.com}
+      NODE_ENV: production
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - grocery-prod-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Optional - uncomment if needed)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: grocery-shop-nginx-prod
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro
+  #   networks:
+  #     - grocery-prod-network
+  #   depends_on:
+  #     - backend
+  #     - frontend
+  #   restart: unless-stopped
+
+volumes:
+  postgres_prod_data:
+    driver: local
+  rabbitmq_prod_data:
+    driver: local
+
+networks:
+  grocery-prod-network:
+    driver: bridge
+    name: grocery-prod-network

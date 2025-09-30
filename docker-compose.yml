@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: grocery-shop-postgres
+    environment:
+      POSTGRES_DB: grocery_shop
+      POSTGRES_USER: grocery_user
+      POSTGRES_PASSWORD: grocery_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./logs/postgres:/var/log/postgresql
+    networks:
+      - grocery-shop-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grocery_user -d grocery_shop"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: grocery-shop-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./logs/rabbitmq:/var/log/rabbitmq
+    networks:
+      - grocery-shop-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./grocery-shop-backend
+      dockerfile: Dockerfile
+    container_name: grocery-shop-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/grocery_shop
+      SPRING_DATASOURCE_USERNAME: grocery_user
+      SPRING_DATASOURCE_PASSWORD: grocery_pass
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      JWT_SECRET: development-jwt-secret-key-for-docker-environment
+      LOGGING_LEVEL_COM_GROCERYSHOP: INFO
+      SERVER_PORT: 8080
+    volumes:
+      - ./logs/backend:/app/logs
+    networks:
+      - grocery-shop-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./grocery-shop-frontend
+      dockerfile: Dockerfile
+    container_name: grocery-shop-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NODE_ENV: development
+    volumes:
+      - ./grocery-shop-frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - grocery-shop-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+networks:
+  grocery-shop-network:
+    driver: bridge
+    name: grocery-shop-network
